@@ -1,0 +1,19 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "An Dev Tinder App",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "Js",
+    "Nodejs"
+  ],
+  "author": "Ashok",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
