@@ -1,25 +1,48 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 const connectDB = require("./config/database");
 const User = require("./models/User");
 const app = express();
 app.use(express.json());
 
+const { signUpValidation } = require("./utils/validation");
+
 app.post("/signup", async (req, res) => {
-  // const userObject = {
-  //   firstName: "Raj",
-  //   lastName: "Kumar",
-  //   emailId: "raj@gamil.com",
-  //   password: "rajkumar@123",
-  // };
-
-  const user = new User(req.body);
-
   try {
+    //validation
+    signUpValidation(req.body);
+
+    //encrpt the password
+    const { password, firstName, lastName, emailId } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      password: passwordHash,
+      emailId,
+    });
     await user.save();
-    res.send("Sucessfully logged In");
+    res.send("Sucessfully signed In");
   } catch (err) {
-    res.status(400).send("Error saving in the user" + err.message);
+    res.status(400).send("Error: " + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid Creditials");
+    }
+    const check = await bcrypt.compare(password, user.password);
+    if (!check) {
+      throw new Error("Invalid Creditials");
+    }
+    res.send("Login Successfull");
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
   }
 });
 
