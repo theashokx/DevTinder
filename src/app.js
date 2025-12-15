@@ -4,7 +4,10 @@ const bcrypt = require("bcrypt");
 const connectDB = require("./config/database");
 const User = require("./models/User");
 const app = express();
+const cookieParser = require("cookie-parser");
+
 app.use(express.json());
+app.use(cookieParser());
 
 const { signUpValidation } = require("./utils/validation");
 
@@ -40,10 +43,19 @@ app.post("/login", async (req, res) => {
     if (!check) {
       throw new Error("Invalid Creditials");
     }
+
+    //Adding cookie to the respnose
+    res.cookie("token", "kjhsfdhgduwyeryegregr");
     res.send("Login Successfull");
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
+});
+
+app.get("/profile", async (req, res) => {
+  const cookie = req.cookies;
+  console.log(cookie);
+  res.send("Reading Cookie");
 });
 
 app.get("/feed", async (req, res) => {
