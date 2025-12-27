@@ -2,22 +2,27 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const userAuth = async (req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return next();
+  }
   try {
-    const { token } = req.cookies;
+    const token = req.cookies.token;
+
     if (!token) {
-      throw new Error("Token not Found");
+      return res.status(401).send("Unauthorized: Token missing");
     }
 
-    const decodedObj = jwt.verify(token, "devTinder");
-    const { _id } = decodedObj;
-    const user = await User.findById(_id);
+    const decoded = jwt.verify(token, "devTinder");
+
+    const user = await User.findById(decoded._id);
     if (!user) {
-      throw new Error("User not Found");
+      return res.status(401).send("Unauthorized: User not found");
     }
+
     req.user = user;
     next();
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    return res.status(401).send("Unauthorized: Invalid token");
   }
 };
 

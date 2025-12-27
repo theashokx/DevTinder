@@ -3,6 +3,9 @@ const { userAuth } = require("../middlewares/auth");
 const { validateEditProfileData } = require("../utils/validation");
 
 const profileRouter = express.Router();
+const cors = require("cors");
+
+profileRouter.options("/profile/edit", cors());
 
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
@@ -24,8 +27,11 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 
     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
 
-    loggedInUser.save();
-    res.send(`${loggedInUser.firstName} ,your profile updated sucessfully`);
+    await loggedInUser.save();
+    res.json({
+      message: "Profile updated successfully",
+      data: loggedInUser,
+    });
   } catch (err) {
     res.status(401).send("Error : " + err.message);
   }

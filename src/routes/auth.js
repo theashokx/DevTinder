@@ -19,8 +19,16 @@ authRouter.post("/signup", async (req, res) => {
       password: passwordHash,
       emailId,
     });
-    await user.save();
-    res.send("Sucessfully signed In");
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
+
+    //Adding cookie to the respnose
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+    });
+    res.json({ message: "Data Succesfully fetched", data: savedUser });
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
@@ -32,7 +40,7 @@ authRouter.post("/login", async (req, res) => {
 
     const user = await User.findOne({ emailId: emailId });
     if (!user) {
-      throw new Error("Invalid Creditials");
+      throw new Error("No user Found with Creditials");
     }
     const check = await user.validatePassword(password);
     if (!check) {
@@ -42,8 +50,12 @@ authRouter.post("/login", async (req, res) => {
     const token = await user.getJWT();
 
     //Adding cookie to the respnose
-    res.cookie("token", token);
-    res.send("Login Successfull");
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+    });
+    res.send(user);
   } catch (err) {
     res.status(401).send("Error: " + err.message);
   }
